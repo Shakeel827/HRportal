@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Admin User - GENPANDAX HR</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        .info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+            margin-bottom: 20px;
+        }
+        .credentials {
+            background: #f0fdf4;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            border: 2px solid #86efac;
+        }
+        .credentials strong {
+            color: #166534;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏢 GENPANDAX HR Portal</h1>
+        <h2>Create Admin User</h2>
+
+        <div class="info">
+            <strong>ℹ️ Setup Instructions:</strong><br>
+            Click the button below to create the admin account. This will:
+            <ul>
+                <li>Create an authentication user</li>
+                <li>Create an employee record with admin privileges</li>
+                <li>Set up leave balance</li>
+            </ul>
+        </div>
+
+        <button id="createBtn" onclick="createAdmin()">Create Admin Account</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://uscznsdadkkferbewlbo.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzY3puc2RhZGtrZmVyYmV3bGJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MzEwMTEsImV4cCI6MjA3NjEwNzAxMX0.95rs6_LDx48h8GAan9M30TEDSaEms1m27mytYDRb_B8';
+
+        async function createAdmin() {
+            const btn = document.getElementById('createBtn');
+            const resultDiv = document.getElementById('result');
+
+            btn.disabled = true;
+            btn.textContent = 'Creating admin account...';
+            resultDiv.innerHTML = '';
+
+            try {
+                const response = await fetch(
+                    `${SUPABASE_URL}/functions/v1/init-admin`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${SUPABASE_KEY}`,
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
+
+                const data = await response.json();
+
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            ✅ ${data.message}
+                        </div>
+                        <div class="credentials">
+                            <strong>Login Credentials:</strong><br><br>
+                            <strong>Employee ID:</strong> ${data.credentials.employeeId}<br>
+                            <strong>Password:</strong> ${data.credentials.password}<br><br>
+                            You can now login to the HR Portal!<br><br>
+                            <small>Redirecting in 3 seconds...</small>
+                        </div>
+                    `;
+                    btn.style.background = '#10b981';
+                    btn.textContent = '✓ Admin Created Successfully';
+
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 3000);
+                } else {
+                    throw new Error(data.error || 'Unknown error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        ❌ Error: ${error.message}
+                        <br><br>
+                        Please refresh the page and try again, or check the browser console for details.
+                    </div>
+                `;
+                btn.disabled = false;
+                btn.textContent = 'Try Again';
+            }
+        }
+    </script>
+</body>
+</html>
